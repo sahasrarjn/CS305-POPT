@@ -1,0 +1,205 @@
+#include "cache.h"
+#include "uncore.h"
+
+int ckp2 = 0, ckp3 = 0;
+
+struct RME{
+    // Reference Matrix Entry
+    uint8_t entry;
+
+    RME(int _entry){
+        entry = _entry & 255;
+    }
+
+    bool get_msb(){
+      return entry & uint8_t(1<<7); // 128
+    }
+
+    uint8_t get_addr(){
+      return entry & uint8_t(1<<7-1); // 127
+    }
+};
+
+// initialize replacement state
+void CACHE::llc_initialize_replacement()
+{
+
+}
+
+bool CACHE::check_datatype(intptr_t addr, int &dataTypeID)
+{
+    if (addr == -1) return false;
+    assert(addr >= 0);
+    for(int dtype = 0; dtype < numMainDataTypes; dtype++){
+        for(size_t i = 0; i < popt_addrStart[dtype].size(); i++){
+            if(addr >= popt_addrStart[dtype][i] && addr < popt_addrEnd[dtype][i]){
+              dataTypeID = dtype;
+              return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+int CACHE::getVertexIDX(intptr_t addr, int dTypeID)
+{
+    auto startAddr = popt_addrStart[dTypeID][0];
+    auto endAddr   = popt_addrEnd[dTypeID][0];
+    auto elemSz    = popt_elemSz[dTypeID][0];
+    return (dTypeID == FRONTIER) ? (addr - startAddr) * 8 : (addr - startAddr) / elemSz;
+}
+
+uint8_t CACHE::find_next_reference(int irregInd, int regInd, int dTypeID)
+{
+  int N = uncore.g.num_nodes();
+  int E = uncore.LLC.num_epochs[dTypeID];
+  int epochSz = (N + E - 1) / E;
+  int numSubEpochs = (E + 1) / 2;
+  int subEpochSz = (epochSz + numSubEpochs - 1) / numSubEpochs;
+  int vtxperline  = (dTypeID == FRONTIER) ? LINE_SIZE * 8 : LINE_SIZE / popt_elemSz[IRREGDATA][0];
+
+  // get vertex/cache line number
+  int cacheLineID = irregInd / vtxperline;
+  int currEpoch   = regInd / epochSz;
+  assert(uncore.LLC.offset_matrix[dTypeID] != NULL);
+  RME currEntry(uncore.LLC.offset_matrix[dTypeID][(currEpoch * uncore.LLC.num_clines[dTypeID]) + cacheLineID]);
+
+  if (currEntry.get_msb() == 1){
+    //We dont have a reference this epoch - Find next Epoch access
+    uint8_t reref = currEntry.get_addr();
+    assert(reref <= MAX_REREF);
+
+    return reref;
+  }
+  else{
+    //We have a reference this epoch
+    uint8_t lastRefQ = currEntry.get_addr();
+    int epochOffset = regInd - (currEpoch * epochSz);
+    uint8_t subEpochDistQ = epochOffset / subEpochSz;
+    assert(subEpochDistQ <= MAX_REREF);
+
+    if (subEpochDistQ <= lastRefQ){   // Yet to be accessed in this epoch
+        return 0;
+    }
+    else{ // No further accesses this epoch, find for the next epoch
+      RME nextEntry(uncore.LLC.offset_matrix[dTypeID][((currEpoch + 1) * uncore.LLC.num_clines[dTypeID]) + cacheLineID]);
+      if (nextEntry.get_msb() == 1){
+        uint8_t reref = nextEntry.get_addr() + 1;
+        return reref < MAX_REREF ? reref : MAX_REREF;
+      }
+      else{ // To be accessed in next epoch
+        return 1;
+      }
+    }
+  }
+}
+
+void CACHE::check_for_tag(int set, int &evictionWay){
+    for (int way = 0; way < NUM_WAY; ++way){
+        if (block[set][way].tag == 0){
+            evictionWay = way;
+            break;
+        }
+    }
+}
+
+void CACHE::check_for_irreg_or_frontier(int set, int &evictionWay){
+    // check for IRREGDATA/FRONTIER data eviction
+    for (int way = 0; way < NUM_WAY; ++way){
+        int dTypeID = -1;
+        // Find the correct dTypeID for the eviction (compare virtual address with the base and bound)
+        bool flag = check_datatype(block[set][way].virtual_addr, dTypeID);
+        if (dTypeID != IRREGDATA && dTypeID != FRONTIER){
+            evictionWay = way;
+            ckp2++; // DEBUG
+            break;
+        }
+    }
+}
+
+// find replacement victim
+// DEBUG INFO: checked that this function gets called
+uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const BLOCK *current_set, uint64_t ip, uint64_t full_addr, uint32_t type)
+{
+    if (irreg_startID != -1) // OPT
+    {
+        int evictionWay = -1;
+        // Remove the invalid line with the lowest counter value first
+        check_for_tag(set, evictionWay);
+        if (evictionWay == -1)
+            check_for_irreg_or_frontier(set, evictionWay);
+
+        // Actual popt replacement policy
+        if (evictionWay == -1){
+            ckp3++; //DEBUG
+            uint8_t maxRerefDist = 0;
+            int currRegIndex = regIdx;
+            for (int way = 0; way < NUM_WAY; ++way){
+                // Find the correct way for the eviction (compare VA with the base and bound)
+                int dTypeID = -1;
+                intptr_t clineID = block[set][way].virtual_addr / LINE_SIZE; // get cache ID
+                auto addr = clineID * LINE_SIZE;            // get virtual address
+
+                bool flag = check_datatype(addr, dTypeID); // get the data type ID
+		        if(dTypeID == -1) return way;
+                int baseVtx = getVertexIDX(addr, dTypeID);  // get the base vertex ID
+
+                uint8_t rerefDist = find_next_reference(baseVtx, currRegIndex, dTypeID);
+                if (maxRerefDist < rerefDist){
+                    maxRerefDist = rerefDist;
+                    evictionWay  = way;
+                }
+            }
+        }
+        // if the irregdata in all ways, is going to be accessed in this same epoch, then evictionWay will remain -1, so we replace the first one.
+        return evictionWay == -1 ? 0 : evictionWay;
+    }
+    else // LRU
+    {
+	//cout << "lru victim" << endl;
+        uint32_t way = lru_victim(cpu, instr_id, set, current_set, ip, full_addr, type);
+        assert(way <= NUM_WAY);
+        return way;
+    }
+}
+
+// called on every cache hit and cache fill
+void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t way, uint64_t full_addr, uint64_t ip, uint64_t victim_addr, uint32_t type, uint8_t hit)
+{
+    string TYPE_NAME;
+    if (type == LOAD)
+        TYPE_NAME = "LOAD";
+    else if (type == RFO)
+        TYPE_NAME = "RFO";
+    else if (type == PREFETCH)
+        TYPE_NAME = "PF";
+    else if (type == WRITEBACK)
+        TYPE_NAME = "WB";
+    else
+        assert(0);
+
+    if (hit)
+        TYPE_NAME += "_HIT";
+    else
+        TYPE_NAME += "_MISS";
+
+    if ((type == WRITEBACK) && ip)
+        assert(0);
+
+    // uncomment this line to see the LLC accesses
+    // cout << "CPU: " << cpu << "  LLC " << setw(9) << TYPE_NAME << " set: " << setw(5) << set << " way: " << setw(2) << way;
+    // cout << hex << " paddr: " << setw(12) << paddr << " ip: " << setw(8) << ip << " victim_addr: " << victim_addr << dec << endl;
+
+    // baseline LRU
+    if (hit && (type == WRITEBACK)) // writeback hit does not update LRU state
+        return;
+
+    return lru_update(set, way);
+}
+
+void CACHE::llc_replacement_final_stats()
+{
+    cout << "CKPT 2: " << ckp2 << endl;
+    cout << "CKPT 3: " << ckp3 << endl;
+}

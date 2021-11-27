@@ -1,0 +1,103 @@
+Generate Time:       0.01252
+Build Time:          0.00060
+uncore.cc: num_nodes4096
+[CSR-HYBRID-PREPROCESSING] Time to quantize nghs and compact vertices = 0.000784003
+[CSR-HYBRID-PREPROCESSING] Time to convert to offsets matrix = 0.000383633
+[CSR-HYBRID-PREPROCESSING] Time to transpose offsets matrix =  0.000116743
+
+*** ChampSim Multicore Out-of-Order Simulator ***
+
+Warmup Instructions: 1000000
+Simulation Instructions: 70000000
+Number of CPUs: 1
+LLC sets: 2048
+LLC ways: 16
+Off-chip DRAM Size: 4096 MB Channels: 1 Width: 64-bit Data Rate: 3200 MT/s
+
+CPU 0 runs /host/project/champsim-for-pin/dpc3_traces/graph_15_100.trace.xz
+CPU 0 Bimodal branch predictor
+
+Warmup complete CPU 0 instructions: 1000003 cycles: 409770 (Simulation time: 0 hr 0 min 3 sec) 
+
+cache.cc: registerDatatype 94842970811760 48 dataTYpeID: 2
+cache.cc: registerDatatype 94842967018080 32 dataTYpeID: 0
+cache.cc: registerDatatype 94842966886960 48 dataTYpeID: 1
+Heartbeat CPU 0 instructions: 10000003 cycles: 20939057 heartbeat IPC: 0.477577 cumulative IPC: 0.438398 (Simulation time: 0 hr 0 min 28 sec) 
+*** Reached end of trace for Core: 0 Repeating trace: /host/project/champsim-for-pin/dpc3_traces/graph_15_100.trace.xz
+cache.cc: registerDatatype 94842970811760 48 dataTYpeID: 2
+cache.cc: registerDatatype 94842967018080 32 dataTYpeID: 0
+cache.cc: registerDatatype 94842966886960 48 dataTYpeID: 1
+Heartbeat CPU 0 instructions: 20000000 cycles: 42274420 heartbeat IPC: 0.468705 cumulative IPC: 0.453843 (Simulation time: 0 hr 0 min 52 sec) 
+*** Reached end of trace for Core: 0 Repeating trace: /host/project/champsim-for-pin/dpc3_traces/graph_15_100.trace.xz
+cache.cc: registerDatatype 94842966886960 48 dataTYpeID: 1
+Heartbeat CPU 0 instructions: 30000000 cycles: 63584290 heartbeat IPC: 0.469266 cumulative IPC: 0.459046 (Simulation time: 0 hr 1 min 19 sec) 
+*** Reached end of trace for Core: 0 Repeating trace: /host/project/champsim-for-pin/dpc3_traces/graph_15_100.trace.xz
+cache.cc: registerDatatype 94842966886960 48 dataTYpeID: 1
+Heartbeat CPU 0 instructions: 40000000 cycles: 84894406 heartbeat IPC: 0.469261 cumulative IPC: 0.461622 (Simulation time: 0 hr 1 min 46 sec) 
+*** Reached end of trace for Core: 0 Repeating trace: /host/project/champsim-for-pin/dpc3_traces/graph_15_100.trace.xz
+cache.cc: registerDatatype 94842966886960 48 dataTYpeID: 1
+Heartbeat CPU 0 instructions: 50000000 cycles: 106216869 heartbeat IPC: 0.468989 cumulative IPC: 0.463107 (Simulation time: 0 hr 2 min 14 sec) 
+*** Reached end of trace for Core: 0 Repeating trace: /host/project/champsim-for-pin/dpc3_traces/graph_15_100.trace.xz
+cache.cc: registerDatatype 94842966886960 48 dataTYpeID: 1
+Heartbeat CPU 0 instructions: 60000000 cycles: 127532285 heartbeat IPC: 0.469144 cumulative IPC: 0.464119 (Simulation time: 0 hr 2 min 41 sec) 
+*** Reached end of trace for Core: 0 Repeating trace: /host/project/champsim-for-pin/dpc3_traces/graph_15_100.trace.xz
+cache.cc: registerDatatype 94842966886960 48 dataTYpeID: 1
+Heartbeat CPU 0 instructions: 70000001 cycles: 148847997 heartbeat IPC: 0.469138 cumulative IPC: 0.46484 (Simulation time: 0 hr 3 min 7 sec) 
+*** Reached end of trace for Core: 0 Repeating trace: /host/project/champsim-for-pin/dpc3_traces/graph_15_100.trace.xz
+Finished CPU 0 instructions: 70000000 cycles: 149453118 cumulative IPC: 0.468374 (Simulation time: 0 hr 3 min 9 sec) 
+
+ChampSim completed all CPUs
+
+Region of Interest Statistics
+
+CPU 0 cumulative IPC: 0.468374 instructions: 70000000 cycles: 149453118
+L1D TOTAL     ACCESS:   21183938  HIT:   14072545  MISS:    7111393
+L1D LOAD      ACCESS:   16430956  HIT:   12759483  MISS:    3671473
+L1D RFO       ACCESS:    4752982  HIT:    1313062  MISS:    3439920
+L1D PREFETCH  ACCESS:          0  HIT:          0  MISS:          0
+L1D WRITEBACK ACCESS:          0  HIT:          0  MISS:          0
+L1D PREFETCH  REQUESTED:          0  ISSUED:          0  USEFUL:          0  USELESS:          0
+L1D AVERAGE MISS LATENCY: 33.5292 cycles
+L1I TOTAL     ACCESS:   13972197  HIT:   13968473  MISS:       3724
+L1I LOAD      ACCESS:   13972197  HIT:   13968473  MISS:       3724
+L1I RFO       ACCESS:          0  HIT:          0  MISS:          0
+L1I PREFETCH  ACCESS:          0  HIT:          0  MISS:          0
+L1I WRITEBACK ACCESS:          0  HIT:          0  MISS:          0
+L1I PREFETCH  REQUESTED:          0  ISSUED:          0  USEFUL:          0  USELESS:          0
+L1I AVERAGE MISS LATENCY: 174.209 cycles
+L2C TOTAL     ACCESS:   10607355  HIT:    9297732  MISS:    1309623
+L2C LOAD      ACCESS:    3675192  HIT:    3155771  MISS:     519421
+L2C RFO       ACCESS:    3439919  HIT:    2649724  MISS:     790195
+L2C PREFETCH  ACCESS:          0  HIT:          0  MISS:          0
+L2C WRITEBACK ACCESS:    3492244  HIT:    3492237  MISS:          7
+L2C PREFETCH  REQUESTED:          0  ISSUED:          0  USEFUL:          0  USELESS:          0
+L2C AVERAGE MISS LATENCY: 100.758 cycles
+LLC TOTAL     ACCESS:    2112427  HIT:    1540112  MISS:     572315
+LLC LOAD      ACCESS:     519421  HIT:      27634  MISS:     491787
+LLC RFO       ACCESS:     789288  HIT:     721170  MISS:      68118
+LLC PREFETCH  ACCESS:          0  HIT:          0  MISS:          0
+LLC WRITEBACK ACCESS:     803718  HIT:     791308  MISS:      12410
+LLC PREFETCH  REQUESTED:          0  ISSUED:          0  USEFUL:          0  USELESS:          0
+LLC AVERAGE MISS LATENCY: 161.906 cycles
+Major fault: 0 Minor fault: 1443
+
+DRAM Statistics
+ CHANNEL 0
+ RQ ROW_BUFFER_HIT:     424897  ROW_BUFFER_MISS:     135008
+ DBUS_CONGESTED:      11668
+ WQ ROW_BUFFER_HIT:      19999  ROW_BUFFER_MISS:      65385  FULL:          0
+
+ AVG_CONGESTED_CYCLE: 5
+
+CPU 0 Branch Prediction Accuracy: 97.3495% MPKI: 4.22327 Average ROB Occupancy at Mispredict: 79.5962
+
+Branch types
+NOT_BRANCH: 58845905 84.0656%
+BRANCH_DIRECT_JUMP: 102844 0.14692%
+BRANCH_INDIRECT: 63 9e-05%
+BRANCH_CONDITIONAL: 10737300 15.339%
+BRANCH_DIRECT_CALL: 269108 0.38444%
+BRANCH_INDIRECT_CALL: 2394 0.00342%
+BRANCH_RETURN: 42077 0.06011%
+BRANCH_OTHER: 0 0%
+
